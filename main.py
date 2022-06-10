@@ -1,14 +1,19 @@
 from tkinter import *
 from tkinter import ttk
 import sqlite3
+import os.path
+from tkinter import messagebox
 
 root = Tk()
 root.geometry("1366x768")
+bg = PhotoImage(file = "images/Australian_Open_logo.png")
 root.title("ΠΛΗΠΡΟ - ΟΜΑΔΑ03")
 root.resizable(0, 0)
 
 with sqlite3.connect('database.db') as db:
-    cur = db.cursor()
+        cur = db.cursor()
+
+
 
 def players_list():
     root.withdraw()
@@ -24,14 +29,18 @@ class MainPage: # Αρχική Σελίδα
         top.resizable(0, 0)
         top.title("AUSTRALIAN OPEN - ΠΛΗΠΡΟ - ΟΜΑΔΑ03")
 
+        self.logo_label = Label(root)
+        self.logo_label.place(relx=0.85, rely=0.92, width=205, height=60)
+        self.logo_label.configure(image=bg)
+
         self.playersMenuBtn = Button(root)
-        self.playersMenuBtn.place(relx=0.14, rely=0.1, width=250, height=80)
+        self.playersMenuBtn.place(relx=0.14, rely=0, width=250, height=80)
         self.playersMenuBtn.configure(relief="flat")
         self.playersMenuBtn.configure(overrelief="flat")
-        self.playersMenuBtn.configure(activebackground="#ffffff")
+        self.playersMenuBtn.configure(activebackground="#CF1E14")
         self.playersMenuBtn.configure(cursor="hand2")
-        self.playersMenuBtn.configure(foreground="#333333")
-        self.playersMenuBtn.configure(background="#ffffff")
+        self.playersMenuBtn.configure(foreground="#ffffff")
+        self.playersMenuBtn.configure(background="#CF1E14")
         self.playersMenuBtn.configure(font="-family {Poppins SemiBold} -size 24")
         self.playersMenuBtn.configure(borderwidth="0")
         self.playersMenuBtn.configure(text="""ΠΑΙΚΤΕΣ""")
@@ -41,10 +50,10 @@ class MainPage: # Αρχική Σελίδα
         self.gamesMenuBtn.place(relx=0.54, rely=0.1, width=250, height=80)
         self.gamesMenuBtn.configure(relief="flat")
         self.gamesMenuBtn.configure(overrelief="flat")
-        self.gamesMenuBtn.configure(activebackground="#ffffff")
+        self.gamesMenuBtn.configure(activebackground="#CF1E14")
         self.gamesMenuBtn.configure(cursor="hand2")
-        self.gamesMenuBtn.configure(foreground="#333333")
-        self.gamesMenuBtn.configure(background="#ffffff")
+        self.gamesMenuBtn.configure(foreground="#ffffff")
+        self.gamesMenuBtn.configure(background="#CF1E14")
         self.gamesMenuBtn.configure(font="-family {Poppins SemiBold} -size 24")
         self.gamesMenuBtn.configure(borderwidth="0")
         self.gamesMenuBtn.configure(text="""ΑΓΩΝΕΣ""")
@@ -56,6 +65,32 @@ class PlayerList: # Σελίδα λίστας παικτών
         top.geometry("1366x768")
         top.resizable(0, 0)
         top.title("AUSTRALIAN OPEN - ΠΛΗΠΡΟ - ΟΜΑΔΑ03 - ΛΙΣΤΑ ΠΑΙΚΤΩΝ")
+
+        self.sel_player_name_label = Label(players)
+        self.sel_player_name_label.place(relx=0.800, rely=0.05)
+        self.sel_player_name_label.configure(font="-family {Poppins SemiBold} -size 20")
+        
+
+        self.sel_player_surname_label = Label(players)
+        self.sel_player_surname_label.place(relx=0.800, rely=0.10)
+        self.sel_player_surname_label.configure(font="-family {Poppins SemiBold} -size 20")
+        
+
+        self.sel_player_birth_date_label = Label(players)
+        self.sel_player_birth_date_label.place(relx=0.800, rely=0.15)
+        self.sel_player_birth_date_label.configure(font="-family {Poppins SemiBold} -size 10")
+        
+        
+        self.sel_player_birth_place_label = Label(players)
+        self.sel_player_birth_place_label.place(relx=0.800, rely=0.20)
+        self.sel_player_birth_place_label.configure(font="-family {Poppins SemiBold} -size 10")
+        
+
+        self.sel_player_rank = Label(players)
+        self.sel_player_rank.place(relx=0.700, rely=0.05)
+        self.sel_player_rank.configure(font="-family {Poppins SemiBold} -size 30")
+        
+
 
         #region Label Αναζήτησης
         self.player_search_label = Label(players)
@@ -111,6 +146,8 @@ class PlayerList: # Σελίδα λίστας παικτών
         self.tree.column("#4", stretch=NO, minwidth=0, width=60)
         self.tree.column("#5", stretch=NO, minwidth=0, width=200)
         self.tree.column("#6", stretch=NO, minwidth=0, width=50)
+
+        self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)
         #endregion
 
         self.exit_button = Button(players)
@@ -143,7 +180,18 @@ class PlayerList: # Σελίδα λίστας παικτών
             self.tree.insert("", "end", values=(data))
 
     def on_tree_select(self, Event):
-        pass
+        player_actual_rank = self.tree.item(self.tree.selection()[0])["values"][0]
+        cur.execute("SELECT actual_rank, firstname,lastname,yearofbirth,birthplace,sglrank FROM players where actual_rank=" + str(player_actual_rank))
+        player_result = cur.fetchone()
+        if len(player_result)==0:
+            messagebox.showerror(message='Player not found')
+        else:
+            self.sel_player_name_label.configure(text=player_result[1])
+            self.sel_player_surname_label.configure(text=player_result[2])
+            self.sel_player_birth_date_label.configure(text=str(player_result[3]))
+            self.sel_player_birth_place_label.configure(text=player_result[4])
+            self.sel_player_rank.configure(text=str(player_result[5]))
+        
     
     def show_selected_player_data(self, actual_rank):
         pass
@@ -151,6 +199,8 @@ class PlayerList: # Σελίδα λίστας παικτών
     def Exit(self):
         players.destroy()
         root.deiconify()
+
+
 
 mainPage = MainPage(root)
 root.mainloop()
