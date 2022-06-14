@@ -1,8 +1,10 @@
 from tkinter import *
 from tkinter import ttk
 import sqlite3
-import os.path
 from tkinter import messagebox
+
+from draw import Draw
+
 
 root = Tk()
 root.geometry("1366x768")
@@ -23,6 +25,14 @@ def players_list():
     playersPage = PlayerList(players)
     players.mainloop()
 
+def games_page():
+    root.withdraw()
+    global games
+    global gamesPage
+    games=Toplevel()
+    gamesPage=GamesPage(games)
+    games.mainloop()
+
 class MainPage: # Αρχική Σελίδα
     def __init__(self, top=None):
         top.geometry("1366x768")
@@ -32,9 +42,13 @@ class MainPage: # Αρχική Σελίδα
         self.logo_label = Label(root)
         self.logo_label.place(relx=0.85, rely=0.92, width=205, height=60)
         self.logo_label.configure(image=bg)
+        # self.logo2_label = Label(root)
+        # self.logo2_label.place(relx=0.85, rely=0.92, width=205, height=60)
+        # self.logo2_label.configure(text="TESTTSTS")
+        # self.logo2_label.configure(background='transparent')
 
         self.playersMenuBtn = Button(root)
-        self.playersMenuBtn.place(relx=0.14, rely=0, width=250, height=80)
+        self.playersMenuBtn.place(relx=0.14, rely=0.1, width=250, height=80)
         self.playersMenuBtn.configure(relief="flat")
         self.playersMenuBtn.configure(overrelief="flat")
         self.playersMenuBtn.configure(activebackground="#CF1E14")
@@ -57,7 +71,7 @@ class MainPage: # Αρχική Σελίδα
         self.gamesMenuBtn.configure(font="-family {Poppins SemiBold} -size 24")
         self.gamesMenuBtn.configure(borderwidth="0")
         self.gamesMenuBtn.configure(text="""ΑΓΩΝΕΣ""")
-        self.gamesMenuBtn.configure(command=players_list)
+        self.gamesMenuBtn.configure(command=games_page)
         
 
 class PlayerList: # Σελίδα λίστας παικτών
@@ -148,8 +162,12 @@ class PlayerList: # Σελίδα λίστας παικτών
         self.tree.column("#6", stretch=NO, minwidth=0, width=50)
 
         self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)
+        #vertical scrollbar για το πεδίο παικτών
+        self.vsb = ttk.Scrollbar(players, orient="vertical", command=self.tree.yview)
+        self.vsb.place(relx=0.506, rely=0.05, relheight=0.86)
+        self.tree.configure(yscrollcommand=self.vsb.set)
         #endregion
-
+        # επιστροφη στο μενου
         self.exit_button = Button(players)
         self.exit_button.place(relx=0.835, rely=0.005, width=200, height=23)
         self.exit_button.configure(relief="flat")
@@ -200,7 +218,120 @@ class PlayerList: # Σελίδα λίστας παικτών
         players.destroy()
         root.deiconify()
 
+class GamesPage: # Σελίδα Αγώνων
+    def __init__(self, top=None):
+        top.geometry("1366x768")
+        top.resizable(0, 0)
+        top.title("AUSTRALIAN OPEN - ΠΛΗΠΡΟ - ΟΜΑΔΑ03 - ΑΓΩΝΕΣ")
 
+        
+        
+        # self.tree.configure(yscrollcommand=self.vsb.set)
+        
+
+        # επιστροφη στο μενου
+        self.exit_button = Button(games)
+        self.exit_button.place(relx=0.835, rely=0.005, width=200, height=23)
+        self.exit_button.configure(relief="flat")
+        self.exit_button.configure(overrelief="flat")
+        self.exit_button.configure(activebackground="#CF1E14")
+        self.exit_button.configure(cursor="hand2")
+        self.exit_button.configure(foreground="#ffffff")
+        self.exit_button.configure(background="#CF1E14")
+        self.exit_button.configure(font="-family {Poppins SemiBold} -size 10")
+        self.exit_button.configure(borderwidth="0")
+        self.exit_button.configure(text="""ΕΠΙΣΤΡΟΦΗ ΣΤΟ MENU""")
+        self.exit_button.configure(command=self.Exit)
+
+        # Draw button
+        self.draw_button = Button(games)
+        self.draw_button.place(relx=0.035, rely=0.005, width=200, height=23)
+        self.draw_button.configure(relief="flat")
+        self.draw_button.configure(overrelief="flat")
+        self.draw_button.configure(activebackground="#CF1E14")
+        self.draw_button.configure(cursor="hand2")
+        self.draw_button.configure(foreground="#ffffff")
+        self.draw_button.configure(background="#CF1E14")
+        self.draw_button.configure(font="-family {Poppins SemiBold} -size 10")
+        self.draw_button.configure(borderwidth="0")
+        self.draw_button.configure(text="""ΚΛΗΡΩΣΗ""")
+        self.draw_button.configure(command=self.create_draw)
+
+
+
+        ########
+        # h = Scrollbar(games, orient='horizontal')
+        # h.pack(side=BOTTOM, fill=X)
+        
+        # v = Scrollbar(games)
+        # v.pack(side=RIGHT, fill=Y)
+
+        HEIGHT = 2048  
+        WIDTH = 1366
+        HORIZONTAL_PADDING = 60
+        GAME_BOX_WIDTH_HEIGHT_RATIO = 4
+
+        _size = 6
+        _columns = _size + 1
+
+        _column_width = WIDTH / _columns
+
+        _game_box_width = _column_width - HORIZONTAL_PADDING
+        _game_box_height = _game_box_width / GAME_BOX_WIDTH_HEIGHT_RATIO
+
+        self.canvas = Canvas(games, width=WIDTH, height=HEIGHT)
+        self.canvas.place(relx=0.05, rely=0.15, relheight=0.90)
+        self.canvas.pack()
+
+        for i in range(_columns):
+            matches = 2 ** abs(i - _size)
+            
+            x_center = _column_width * (i + 0.5)
+            y_size = HEIGHT / matches
+            for j in range(matches):
+                # name1 = final_pairing[0][(j)%8][0]
+                # name2 = final_pairing[0][(j)%8][1]
+                y_center = y_size * (j + 0.5)
+                self.canvas.create_rectangle(x_center - _game_box_width / 2, y_center - _game_box_height / 2,
+                                        x_center + _game_box_width / 2, y_center + _game_box_height / 2)
+                
+
+                self.canvas.create_text(x_center - _game_box_width / 2 + 50, y_center - _game_box_height / 2 + 12, text="name1", fill="black")
+                self.canvas.create_text(x_center - _game_box_width / 2 + 50, y_center - _game_box_height / 2 + 25, text="name2", fill="black")
+                
+                if i != _columns - 1:
+                    self.canvas.create_line(x_center + _game_box_width / 2, y_center,
+                                       x_center + _game_box_width / 2 + HORIZONTAL_PADDING / 2, y_center)
+                if i != 0:
+                    self.canvas.create_line(x_center - _game_box_width / 2, y_center, x_center - _game_box_width / 2 - HORIZONTAL_PADDING / 2, y_center)
+                if j % 2 == 1:
+                    self.canvas.create_line(x_center + _game_box_width / 2 + HORIZONTAL_PADDING / 2, y_center, x_center + _game_box_width / 2 + HORIZONTAL_PADDING / 2, y_center - y_size)
+
+                # btn = canvas.create_rectangle(x_center +  _game_box_width / 10  + 30, y_center - _game_box_height / 10, x_center + _game_box_width / 10 + 10, y_center + _game_box_height / 10, fill = "red")
+                # canvas.tag_bind(btn, "<Button-1>", popup_window)
+               
+                #final_pairing = GetUserInput()       
+        self.canvas.pack()
+        # h.config(command=canvas.xview)
+        # v.config(command=canvas.yview)
+        # self.vsb = ttk.Scrollbar(games, orient="vertical", command=self.tree.yview)
+        self.vsb = ttk.Scrollbar(games, orient="vertical")
+        self.vsb.place(relx=0.95, rely=0.15, relheight=0.86)
+        # self.hsb = ttk.Scrollbar(games, orient="horizontal", command=self.tree.xview)
+        self.hsb = ttk.Scrollbar(games, orient="horizontal")
+        self.vsb.config(command=self.canvas.yview)
+        self.hsb.config(command=self.canvas.xview)
+        ########
+        
+    def create_draw():
+        draw = Draw()
+        draw.run_draw()
+
+        
+
+    def Exit(self):
+        games.destroy()
+        root.deiconify()
 
 mainPage = MainPage(root)
 root.mainloop()
