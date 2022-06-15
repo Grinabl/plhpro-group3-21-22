@@ -312,15 +312,27 @@ class GamesPage: # Σελίδα Αγώνων
                
                 #final_pairing = GetUserInput()       
         self.canvas.pack()
-        # h.config(command=canvas.xview)
-        # v.config(command=canvas.yview)
-        # self.vsb = ttk.Scrollbar(games, orient="vertical", command=self.tree.yview)
-        self.vsb = ttk.Scrollbar(games, orient="vertical")
-        self.vsb.place(relx=0.95, rely=0.15, relheight=0.86)
-        # self.hsb = ttk.Scrollbar(games, orient="horizontal", command=self.tree.xview)
-        self.hsb = ttk.Scrollbar(games, orient="horizontal")
-        self.vsb.config(command=self.canvas.yview)
-        self.hsb.config(command=self.canvas.xview)
+        h = Scrollbar(games, orient='horizontal')
+        h.pack(side=BOTTOM, fill=X)
+        v = Scrollbar(games)
+        v.pack(side=RIGHT, fill=Y)
+        self.canvas.configure(xscrollcommand=h.set)
+        self.canvas.configure(yscrollcommand=v.set)
+        h.configure(command=self.canvas.xview)
+        v.configure(command=self.canvas.yview)
+        self.canvas.configure(scrollregion=(1, 1, WIDTH, HEIGHT))
+        self.canvas.configure(background='light blue')
+        self.canvas.configure(highlightthickness=0)
+        self.canvas.configure(borderwidth=0)
+        self.canvas.configure(width=800)
+        self.canvas.configure(height=600)
+        self.canvas.configure(relief="flat")
+        self.canvas.configure(overrelief="flat")
+        self.canvas.configure(cursor="hand2")
+        self.canvas.configure(font="-family {Poppins SemiBold} -size 10")
+        self.canvas.configure(borderwidth="0")
+       
+
         ########
         
     def create_draw():
