@@ -5,7 +5,6 @@ from tkinter import messagebox
 
 from draw import Draw
 
-
 root = Tk()
 root.geometry("1366x768")
 bg = PhotoImage(file = "images/Australian_Open_logo.png")
@@ -14,8 +13,6 @@ root.resizable(0, 0)
 
 with sqlite3.connect('database.db') as db:
         cur = db.cursor()
-
-
 
 def players_list():
     root.withdraw()
@@ -32,6 +29,43 @@ def games_page():
     games=Toplevel()
     gamesPage=GamesPage(games)
     games.mainloop()
+
+def insert_val(e1, e2, match_id, next_round_id):
+    # print(e1.get(), e2.get())
+    score1 = e1.get() 
+    score2 = e2.get()
+    cur.execute('UPDATE Matches SET Player1Score=?, Player2Score=? WHERE Id=?', (int(score1), int(score2), match_id,))
+    db.commit()
+
+# def popup_window(eff, match_id, next_round_id):
+#     top = Toplevel(root)
+#     top.geometry("300x180")
+#     top.title("Insert Score")
+#     l1 = Label(top, text="Player 1").place(x=30, y=50)
+#     l2 = Label(top, text="Player 2").place(x=100, y=50)
+#     e1 = Entry(top)
+#     e1.place(x=10, y=70)
+#     e2 = Entry(top)
+#     e2.place(x=100, y=70)
+#     button = Button(top, text="Place Score", command=lambda: insert_val(e1, e2, match_id, next_round_id)).pack(pady=10, side=TOP)
+#     # Put score in database
+#     # Show score
+#     top.mainloop()
+
+def popup_window(match_id, next_round_id, name1, name2):
+    top = Toplevel(root)
+    top.geometry("300x180")
+    top.title("Insert Score")
+    l1 = Label(top, text=name1).place(x=30, y=50)
+    l2 = Label(top, text=name2).place(x=100, y=50)
+    e1 = Entry(top)
+    e1.place(x=10, y=70)
+    e2 = Entry(top)
+    e2.place(x=100, y=70)
+    button = Button(top, text="Place Score", command=lambda: insert_val(e1, e2, match_id, next_round_id)).pack(pady=10, side=TOP)
+    # Put score in database
+    # Show score
+    top.mainloop()
 
 class MainPage: # Αρχική Σελίδα
     def __init__(self, top=None):
@@ -72,7 +106,7 @@ class MainPage: # Αρχική Σελίδα
         self.gamesMenuBtn.configure(borderwidth="0")
         self.gamesMenuBtn.configure(text="""ΑΓΩΝΕΣ""")
         self.gamesMenuBtn.configure(command=games_page)
-        
+
 
 class PlayerList: # Σελίδα λίστας παικτών
     def __init__(self, top=None):
@@ -209,8 +243,7 @@ class PlayerList: # Σελίδα λίστας παικτών
             self.sel_player_birth_date_label.configure(text=str(player_result[3]))
             self.sel_player_birth_place_label.configure(text=player_result[4])
             self.sel_player_rank.configure(text=str(player_result[5]))
-        
-    
+
     def show_selected_player_data(self, actual_rank):
         pass
 
@@ -220,14 +253,11 @@ class PlayerList: # Σελίδα λίστας παικτών
 
 class GamesPage: # Σελίδα Αγώνων
     def __init__(self, top=None):
-        top.geometry("1366x768")
+        top.geometry("1500x800")
         top.resizable(0, 0)
         top.title("AUSTRALIAN OPEN - ΠΛΗΠΡΟ - ΟΜΑΔΑ03 - ΑΓΩΝΕΣ")
 
-        
-        
         # self.tree.configure(yscrollcommand=self.vsb.set)
-        
 
         # επιστροφη στο μενου
         self.exit_button = Button(games)
@@ -257,48 +287,37 @@ class GamesPage: # Σελίδα Αγώνων
         self.draw_button.configure(text="""ΚΛΗΡΩΣΗ""")
         self.draw_button.configure(command=self.create_draw)
 
-
-
         ########
         # h = Scrollbar(games, orient='horizontal')
         # h.pack(side=BOTTOM, fill=X)
         
         # v = Scrollbar(games)
         # v.pack(side=RIGHT, fill=Y)
-
         HEIGHT = 2048  
-        WIDTH = 1366
+        WIDTH = 1200
         HORIZONTAL_PADDING = 60
         GAME_BOX_WIDTH_HEIGHT_RATIO = 4
 
         _size = 6
         _columns = _size + 1
-
         _column_width = WIDTH / _columns
-
         _game_box_width = _column_width - HORIZONTAL_PADDING
         _game_box_height = _game_box_width / GAME_BOX_WIDTH_HEIGHT_RATIO
 
-        self.canvas = Canvas(games, width=WIDTH, height=HEIGHT)
-        self.canvas.place(relx=0.05, rely=0.15, relheight=0.90)
-        self.canvas.pack()
+        self.frame = Frame(games, width = 2000, height = 1100, bd = 1)
+        self.frame.place(relx=0.05, rely=0.15, relheight=0.90)
+
+        self.canvas = Canvas(self.frame, width=1200, height=1000)
+        self.canvas.place()
 
         for i in range(_columns):
             matches = 2 ** abs(i - _size)
-            
             x_center = _column_width * (i + 0.5)
             y_size = HEIGHT / matches
             for j in range(matches):
-                # name1 = final_pairing[0][(j)%8][0]
-                # name2 = final_pairing[0][(j)%8][1]
                 y_center = y_size * (j + 0.5)
                 self.canvas.create_rectangle(x_center - _game_box_width / 2, y_center - _game_box_height / 2,
                                         x_center + _game_box_width / 2, y_center + _game_box_height / 2)
-                
-
-                self.canvas.create_text(x_center - _game_box_width / 2 + 50, y_center - _game_box_height / 2 + 12, text="name1", fill="black")
-                self.canvas.create_text(x_center - _game_box_width / 2 + 50, y_center - _game_box_height / 2 + 25, text="name2", fill="black")
-                
                 if i != _columns - 1:
                     self.canvas.create_line(x_center + _game_box_width / 2, y_center,
                                        x_center + _game_box_width / 2 + HORIZONTAL_PADDING / 2, y_center)
@@ -306,11 +325,6 @@ class GamesPage: # Σελίδα Αγώνων
                     self.canvas.create_line(x_center - _game_box_width / 2, y_center, x_center - _game_box_width / 2 - HORIZONTAL_PADDING / 2, y_center)
                 if j % 2 == 1:
                     self.canvas.create_line(x_center + _game_box_width / 2 + HORIZONTAL_PADDING / 2, y_center, x_center + _game_box_width / 2 + HORIZONTAL_PADDING / 2, y_center - y_size)
-
-                # btn = canvas.create_rectangle(x_center +  _game_box_width / 10  + 30, y_center - _game_box_height / 10, x_center + _game_box_width / 10 + 10, y_center + _game_box_height / 10, fill = "red")
-                # canvas.tag_bind(btn, "<Button-1>", popup_window)
-               
-                #final_pairing = GetUserInput()       
         self.canvas.pack()
         h = Scrollbar(games, orient='horizontal')
         h.pack(side=BOTTOM, fill=X)
@@ -322,28 +336,180 @@ class GamesPage: # Σελίδα Αγώνων
         v.configure(command=self.canvas.yview)
         self.canvas.configure(scrollregion=(1, 1, WIDTH, HEIGHT))
         self.canvas.configure(background='light blue')
-        self.canvas.configure(highlightthickness=0)
-        self.canvas.configure(borderwidth=0)
         self.canvas.configure(width=800)
-        self.canvas.configure(height=600)
-        self.canvas.configure(relief="flat")
-        self.canvas.configure(overrelief="flat")
-        self.canvas.configure(cursor="hand2")
-        self.canvas.configure(font="-family {Poppins SemiBold} -size 10")
-        self.canvas.configure(borderwidth="0")
-       
+        self.canvas.configure(height=600) 
 
-        ########
-        
+        for i in range(_columns):
+            matches = 2 ** abs(i - _size)
+            x_center = _column_width * (i + 0.5)
+            y_size = HEIGHT / matches
+            for j in range(matches):
+                if (matches == 64):
+                    external = j // 4 + 1
+                    internal_num = j % 4 + 1
+                    p_internal_num = 1 if (internal_num == 1 or internal_num == 2) else 2
+                    match_id = str(i + 1) + '.' + str(external) + '.'  + str(internal_num)
+                    next_round_id = str(i + 2) + '.' + str(external) + '.' + str(p_internal_num)
+                    cur.execute("SELECT Id, Player1Id, Player2Id, Player1Score, Player2Score FROM Matches WHERE Id=?", (match_id,))
+                    match_record = cur.fetchall()
+                    if len(match_record) > 0:
+                        cur.execute("SELECT firstname, lastname from players where actual_rank in (?,?)", (match_record[0][1], match_record[0][2],))
+                        players_record=cur.fetchall()
+                        name1 = players_record[0][0] + ' ' + players_record[0][1]
+                        name2 = players_record[1][0] + ' ' + players_record[1][1]
+                        score1=match_record[0][3]
+                        score2=match_record[0][4]
+                    else:
+                        name1="N/A"
+                        name2="N/A"
+                        score1="N/A"
+                        score2="N/A"
+                    # Get name1
+                    # Get name2
+                elif (matches == 32):
+                    external = j // 2 + 1
+                    internal_num = j % 2 + 1
+                    match_id = str(i + 1) + '.' + str(external) + '.' + str(internal_num)
+                    next_round_id = str(i + 2) + '.' + str(external) + '.1'
+                    cur.execute("SELECT Id, Player1Id, Player2Id, Player1Score, Player2Score FROM Matches WHERE Id=?", (match_id,))
+                    match_record = cur.fetchall()
+                    if len(match_record) > 0:
+                        cur.execute("SELECT firstname, lastname from players where actual_rank in (?,?)", (match_record[0][1], match_record[0][2],))
+                        players_record=cur.fetchall()
+                        name1 = players_record[0][0] + ' ' + players_record[0][1]
+                        name2 = players_record[1][0] + ' ' + players_record[1][1]
+                        score1=match_record[0][3]
+                        score2=match_record[0][4]
+                    else:
+                        name1="N/A"
+                        name2="N/A"
+                        score1="N/A"
+                        score2="N/A"
+                    # Get name1
+                    # Get name2
+                elif (matches == 16):
+                    external = j + 1
+                    internal_num = 1
+                    p_external = (external + 1) // 2 if external % 2 == 1 else external // 2
+                    match_id = str(i + 1) + '.' + str(external) + '.' + str(internal_num)
+                    next_round_id = str(i + 2) + '.' + str(p_external)
+                    cur.execute("SELECT Id, Player1Id, Player2Id, Player1Score, Player2Score FROM Matches WHERE Id=?", (match_id,))
+                    match_record = cur.fetchall()
+                    if len(match_record) > 0:
+                        cur.execute("SELECT firstname, lastname from players where actual_rank in (?,?)", (match_record[0][1], match_record[0][2],))
+                        players_record=cur.fetchall()
+                        name1 = players_record[0][0] + ' ' + players_record[0][1]
+                        name2 = players_record[1][0] + ' ' + players_record[1][1]
+                        score1=match_record[0][3]
+                        score2=match_record[0][4]
+                    else:
+                        name1="N/A"
+                        name2="N/A"
+                        score1="N/A"
+                        score2="N/A"
+                elif (matches == 8):
+                    external = j + 1
+                    p_external = (external + 1) // 2 if external % 2 == 1 else external // 2
+                    match_id = str(i + 1) + '.' + str(external)
+                    next_round_id = str(i + 2) + '.' + str(p_external)
+                    cur.execute("SELECT Id, Player1Id, Player2Id, Player1Score, Player2Score FROM Matches WHERE Id=?", (match_id,))
+                    match_record = cur.fetchall()
+                    if len(match_record) > 0:
+                        cur.execute("SELECT firstname, lastname from players where actual_rank in (?,?)", (match_record[0][1], match_record[0][2],))
+                        players_record=cur.fetchall()
+                        name1 = players_record[0][0] + ' ' + players_record[0][1]
+                        name2 = players_record[1][0] + ' ' + players_record[1][1]
+                        score1=match_record[0][3]
+                        score2=match_record[0][4]
+                    else:
+                        name1="N/A"
+                        name2="N/A"
+                        score1="N/A"
+                        score2="N/A"
+                elif (matches == 4):
+                    external = j + 1
+                    p_external = (external + 1) // 2 if external % 2 == 1 else external // 2
+                    match_id = str(i + 1) + '.' + str(external)
+                    next_round_id = str(i + 2) + '.' + str(p_external)
+                    cur.execute("SELECT Id, Player1Id, Player2Id, Player1Score, Player2Score FROM Matches WHERE Id=?", (match_id,))
+                    match_record = cur.fetchall()
+                    if len(match_record) > 0:
+                        cur.execute("SELECT firstname, lastname from players where actual_rank in (?,?)", (match_record[0][1], match_record[0][2],))
+                        players_record=cur.fetchall()
+                        name1 = players_record[0][0] + ' ' + players_record[0][1]
+                        name2 = players_record[1][0] + ' ' + players_record[1][1]
+                        score1=match_record[0][3]
+                        score2=match_record[0][4]
+                    else:
+                        name1="N/A"
+                        name2="N/A"
+                        score1="N/A"
+                        score2="N/A"
+                elif (matches == 2):
+                    external = j + 1
+                    match_id = str(i + 1) + '.' + str(external)
+                    next_round_id = "7.1"
+                    cur.execute("SELECT Id, Player1Id, Player2Id, Player1Score, Player2Score FROM Matches WHERE Id=?", (match_id,))
+                    match_record = cur.fetchall()
+                    if len(match_record) > 0:
+                        cur.execute("SELECT firstname, lastname from players where actual_rank in (?,?)", (match_record[0][1], match_record[0][2],))
+                        players_record=cur.fetchall()
+                        name1 = players_record[0][0] + ' ' + players_record[0][1]
+                        name2 = players_record[1][0] + ' ' + players_record[1][1]
+                        score1=match_record[0][3]
+                        score2=match_record[0][4]
+                    else:
+                        name1="N/A"
+                        name2="N/A"
+                        score1="N/A"
+                        score2="N/A"
+                else:
+                    match_id = "7.1"
+                    cur.execute("SELECT Id, Player1Id, Player2Id, Player1Score, Player2Score FROM Matches WHERE Id=?", (match_id,))
+                    match_record = cur.fetchall()
+                    if len(match_record) > 0:
+                        cur.execute("SELECT firstname, lastname from players where actual_rank in (?,?)", (match_record[0][1], match_record[0][2],))
+                        players_record=cur.fetchall()
+                        name1 = players_record[0][0] + ' ' + players_record[0][1]
+                        name2 = players_record[1][0] + ' ' + players_record[1][1]
+                        score1=match_record[0][3]
+                        score2=match_record[0][4]
+                    else:
+                        name1="N/A"
+                        name2="N/A"
+                        score1="N/A"
+                        score2="N/A"
+                # name1 = final_pairing[0][(j)%8][0]
+                # name2 = final_pairing[0][(j)%8][1]
+                y_center = y_size * (j + 0.5)
+                self.canvas.create_text(x_center - _game_box_width / 2 + 30,
+                                            y_center - _game_box_height / 2 + 7,
+                                            text=name1, fill="black")
+                self.canvas.create_text(x_center - _game_box_width / 2 + 30,
+                                            y_center - _game_box_height / 2 + 20,
+                                            text=name2, fill="black")
+                self.canvas.create_text(x_center - _game_box_width / 2 + 70,
+                                            y_center - _game_box_height / 2 + 7,
+                                            text=score1, fill="black")
+                self.canvas.create_text(x_center - _game_box_width / 2 + 70,
+                                            y_center - _game_box_height / 2 + 20,
+                                            text=score2, fill="black")
+                btn = self.canvas.create_rectangle(x_center + _game_box_width / 10 + 30,
+                                                       y_center - _game_box_height / 10,
+                                                       x_center + _game_box_width / 10 + 10,
+                                                       y_center + _game_box_height / 10, fill = "blue")
+                
+                # self.canvas.tag_bind(btn, "<Button-1>", lambda eff: popup_window(eff, match_id, next_round_id))
+                ttk.Button(self.canvas, text='SCORE', command=lambda match_id=match_id, next_round_id=next_round_id, name1=name1, name2=name2: popup_window(match_id, next_round_id, name1, name2)).place(x=x_center + _game_box_width / 10 + 30, y=y_center - _game_box_height / 10)
+                self.canvas.pack()
+    
+
     def create_draw():
         draw = Draw()
         draw.run_draw()
 
-        
-
     def Exit(self):
         games.destroy()
         root.deiconify()
-
 mainPage = MainPage(root)
 root.mainloop()
