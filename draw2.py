@@ -29,6 +29,7 @@ print(groups)
 matches = {}
 for i in range(1, 17):
     for j in range(1, 5):
+        # matchId = '1.' + str(i) + '.' + str(j)
         matchId = '1.' + str(i) + '.' + str(j)
         random.shuffle(groups[i])
         # cur.execute("""INSERT INTO Matches (Id,Player1Id,Player2Id,Player1Score,Player2Score) VALUES (?,?,?,?,?);""", (matchId, groups[i].pop(), groups[i].pop(), 0, 0))
