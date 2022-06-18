@@ -1,53 +1,97 @@
-
 import sqlite3
 import random
-
-
-class Draw():
     
-    def create_db_connection(db_file):
-        conn = None
-        try:
-            conn = sqlite3.connect(db_file)
-        except Error as e:
-            print(e)
+def create_db_connection(db_file):
+    conn = None
+    try:
+        conn = sqlite3.connect(db_file)
+    except Error as e:
+        print(e)
+    return conn
 
-        return conn
+def clear_matches(conn, cur):
+    cur.execute("""DROP TABLE IF EXISTS Matches""")
+    conn.commit()
 
-    def clear_matches(conn, cur):
-        cur.execute("""DROP TABLE IF EXISTS Matches""")
-        conn.commit()
+def insert_db_header(conn, cur):
+    cur.execute("""CREATE TABLE IF NOT EXISTS Matches (Id text NOT NULL, Player1Id integer NULL, Player2Id integer NULL, Player1Score integer NOT NULL, Player2Score integer NOT NULL);""")
+    conn.commit()
+
+def run_draw():
+    conn = create_db_connection('database.db')
+    cur = conn.cursor()
+    clear_matches(conn, cur)
+    insert_db_header(conn, cur)
+    conn.row_factory = lambda cursor, row: row[0]
+    playersList = cur.execute("SELECT actual_rank FROM players order by actual_rank asc").fetchall() # get players ids from database table players
+    rankGroups = [playersList[x:x+16] for x in range(0, len(playersList), 16)]
+    groups = {}
+
+    for i in range(1, 17):
+        groups[i] = []
+        for j in range(1, 9):
+            random.shuffle(rankGroups[j-1])
+            player = rankGroups[j-1].pop()
+            groups[i].append(player)
+
+    for i in range(1, 17):
+        for j in range(1, 5):
+            matchId = '1.' + str(i) + '.' + str(j)
+            random.shuffle(groups[i])
+            cur.execute("""INSERT INTO Matches (Id,Player1Id,Player2Id,Player1Score,Player2Score) VALUES (?,?,?,?,?);""", (matchId, groups[i].pop()[0], groups[i].pop()[0], 0, 0))
+            conn.commit()
+
+if __name__ == '__main__':
+    run_draw()
+# import sqlite3
+# import random
+
+
+# # class Draw():
     
-    def insert_db_header(conn, cur):
-        cur.execute("""CREATE TABLE IF NOT EXISTS Matches (Id text NOT NULL, Player1Id integer NOT NULL, Player2Id integer NOT NULL, Player1Score integer NOT NULL, Player2Score integer NOT NULL);""")
-        conn.commit()
+# #     def create_db_connection(db_file):
+# #         conn = None
+# #         try:
+# #             conn = sqlite3.connect(db_file)
+# #         except Error as e:
+# #             print(e)
+
+# #         return conn
+
+# #     def clear_matches(conn, cur):
+# #         cur.execute("""DROP TABLE IF EXISTS Matches""")
+# #         conn.commit()
     
-    def run_draw():
-        conn = Draw.create_db_connection('database.db')
-        cur = conn.cursor()
-        Draw.clear_matches(conn, cur)
-        Draw.insert_db_header(conn, cur)
-        conn.row_factory = lambda cursor, row: row[0]
-        playersList = cur.execute("SELECT actual_rank FROM players order by actual_rank asc").fetchall() # get players ids from database table players
-        rankGroups = [playersList[x:x+16] for x in range(0, len(playersList), 16)]
-        groups = {}
+# #     def insert_db_header(conn, cur):
+# #         cur.execute("""CREATE TABLE IF NOT EXISTS Matches (Id text NOT NULL, Player1Id integer NOT NULL, Player2Id integer NOT NULL, Player1Score integer NOT NULL, Player2Score integer NOT NULL);""")
+# #         conn.commit()
+    
+# #     def run_draw():
+# #         conn = Draw.create_db_connection('database.db')
+# #         cur = conn.cursor()
+# #         Draw.clear_matches(conn, cur)
+# #         Draw.insert_db_header(conn, cur)
+# #         conn.row_factory = lambda cursor, row: row[0]
+# #         playersList = cur.execute("SELECT actual_rank FROM players order by actual_rank asc").fetchall() # get players ids from database table players
+# #         rankGroups = [playersList[x:x+16] for x in range(0, len(playersList), 16)]
+# #         groups = {}
  
  
-        for i in range(1, 17):
-            groups[i] = []
-            for j in range(1, 9):
-                random.shuffle(rankGroups[j-1])
-                player = rankGroups[j-1].pop()
-                groups[i].append(player)
-        # print(groups)
+# #         for i in range(1, 17):
+# #             groups[i] = []
+# #             for j in range(1, 9):
+# #                 random.shuffle(rankGroups[j-1])
+# #                 player = rankGroups[j-1].pop()
+# #                 groups[i].append(player)
+# #         # print(groups)
         
-        # matches = {}
-        for i in range(1, 17):
-            for j in range(1, 5):
-                matchId = '1.' + str(i) + '.' + str(j)
-                random.shuffle(groups[i])
-                cur.execute("""INSERT INTO Matches (Id,Player1Id,Player2Id,Player1Score,Player2Score) VALUES (?,?,?,?,?);""", (matchId, groups[i].pop(), groups[i].pop(), 0, 0))
-                conn.commit()
+# #         # matches = {}
+# #         for i in range(1, 17):
+# #             for j in range(1, 5):
+# #                 matchId = '1.' + str(i) + '.' + str(j)
+# #                 random.shuffle(groups[i])
+# #                 cur.execute("""INSERT INTO Matches (Id,Player1Id,Player2Id,Player1Score,Player2Score) VALUES (?,?,?,?,?);""", (matchId, groups[i].pop(), groups[i].pop(), 0, 0))
+# #                 conn.commit()
         
         
 

@@ -4,12 +4,11 @@ import sqlite3
 import os
 
 # First Task: Create Database, Connect with server - fetch required data, Fill the Database, Access The Database
-
 def drop_table_if_exists(connection, cursor):
     cursor.execute('DROP TABLE IF EXISTS players')
+    cursor.execute('DROP TABLE IF EXISTS Matches')
     connection.commit()
-    print('Previous Table dropped successfully')
-    
+    # print('Previous Table dropped successfully')
 
 def create_db_connection(db_file):
     conn = None
@@ -26,16 +25,14 @@ def insert_db_header(connection, cursor):
     # id integer PRIMARY KEY AUTOINCREMENT
     cursor.execute(""" CREATE TABLE IF NOT EXISTS players(firstname text NOT NULL, lastname text NOT NULL,
                     yearofbirth integer NOT NULL, birthplace text NOT NULL, sglrank integer NOT NULL, actual_rank integer NOT NULL); """)
+    cursor.execute("""CREATE TABLE IF NOT EXISTS Matches (Id text NOT NULL, Player1Id integer NULL, Player2Id integer NULL, Player1Score integer NOT NULL, Player2Score integer NOT NULL);""")
     connection.commit()
 
-def main():
+def data_parsing():
     connection = create_db_connection("database.db")
     cursor = connection.cursor()
-
     drop_table_if_exists(connection, cursor)
     insert_db_header(connection, cursor)
-    
-
     # General JSON doesn't have the required data, get tour_ids from general JSON and fetch by tour_id for each player:
     # Fetch all tour_ids for player on men singles:
     response_API = requests.get('https://ausopen.com/event/195321/players?_format=json')
@@ -62,10 +59,9 @@ def main():
         cursor.execute("INSERT INTO players VALUES (?, ?, ?, ?, ?, ?)", (firstname, lastname, yearofbirth, birthplace, sglrank, actual_rank))
         connection.commit()
         optical_percentage += 1/n_players * 100 
-        print("%2.2f" % optical_percentage + ' %')
+        print(optical_percentage)
 
     data = connection.execute("SELECT * FROM players ORDER BY sglrank")
-
     counter = 1
     for row in data:
         value = int(row[4])
@@ -74,8 +70,3 @@ def main():
     connection.commit()
     print("Data parsing completed.\n Database is ready.")
     connection.close()
-
-if __name__ == '__main__':
-    main()
-    
-
