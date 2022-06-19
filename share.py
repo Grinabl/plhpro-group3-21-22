@@ -2,19 +2,21 @@ from tkinter import *
 from tkinter import ttk
 import sqlite3
 from tkinter import messagebox
+import webbrowser
 from scrollable import *
-from data_parser import data_parsing
+from data_parser import parsing_gui
 from draw import run_draw
 
+#Κλήση του Tkinter και αρχικοποίηση της οθόνης
 root = Tk()
 root.geometry("1366x768")
 bg = PhotoImage(file = "images/Australian_Open_logo.png")
 root.title("ΠΛΗΠΡΟ - ΟΜΑΔΑ03")
 root.resizable(0, 0)
-
 with sqlite3.connect('database.db') as db:
         cur = db.cursor()
-
+        
+#Συνάρτηση που εμφανίζει τη σελίδα με τους παιχτές της ομάδας
 def players_list():
     root.withdraw()
     global players
@@ -23,6 +25,7 @@ def players_list():
     playersPage = PlayerList(players)
     players.mainloop()
 
+#Συνάρτηση που εμφανίζει τη σελίδα με τους αγώνες
 def games_nocanvas_page():
     root.withdraw()
     global gamesNoCanvas
@@ -30,9 +33,18 @@ def games_nocanvas_page():
     gamesNoCanvas = Toplevel()
     gaesNoCanvasPage = GamesNoCanvasPage(gamesNoCanvas)
     gamesNoCanvas.mainloop()
+    
+#Συνάρτηση που εμφανίζει τη σελίδα σχετικά με τους Συντελεστές   
+def about_page():
+    root.withdraw()
+    global about
+    global aboutPage
+    about=Toplevel()
+    aboutPage=AboutPage(about)
+    about.mainloop()
 
+#Συνάρτηση που εμφανίζει τη σελίδα καταχώρησης του σκορ
 def score_page(match_id,next_round_id,name1,name2):
-    # games.withdraw()
     gamesNoCanvas.withdraw()
     global scoresPopup
     global scoresPage
@@ -40,25 +52,20 @@ def score_page(match_id,next_round_id,name1,name2):
     scoresPage = ScoresPage(scoresPopup,match_id,next_round_id,name1,name2)
     scoresPopup.mainloop()
 
-
-
-
 class MainPage: # Αρχική Σελίδα
     def __init__(self, top=None):
         top.geometry("1366x768")
         top.resizable(0, 0)
         top.title("AUSTRALIAN OPEN - ΠΛΗΠΡΟ - ΟΜΑΔΑ03")
-
-        
-        
-            
-
+        #Label εικόνας
         self.logo_label = Label(root)
         self.logo_label.place(relx=0.85, rely=0.92, width=205, height=60)
         self.logo_label.configure(image=bg)
-        
+        #End region Label εικόνας
+
+        #Πλήκτρο ανακατεύθυνσης στη σελίδα με τους παίκτες
         self.playersMenuBtn = Button(root)
-        self.playersMenuBtn.place(relx=0.14, rely=0.1, width=250, height=80)
+        self.playersMenuBtn.place(relx=0.10, rely=0.1, width=250, height=80)
         self.playersMenuBtn.configure(relief="flat")
         self.playersMenuBtn.configure(overrelief="flat")
         self.playersMenuBtn.configure(activebackground="#CF1E14")
@@ -69,9 +76,11 @@ class MainPage: # Αρχική Σελίδα
         self.playersMenuBtn.configure(borderwidth="0")
         self.playersMenuBtn.configure(text="""ΠΑΙΚΤΕΣ""")
         self.playersMenuBtn.configure(command=players_list)
+        #End region πλήκτρου ανακατεύθυνσης
 
+        #Πλήκτρο ανακατεύθυνσης στη σελίδα με τις αγώνες
         self.gamesMenuBtn = Button(root)
-        self.gamesMenuBtn.place(relx=0.54, rely=0.1, width=250, height=80)
+        self.gamesMenuBtn.place(relx=0.70, rely=0.1, width=250, height=80)
         self.gamesMenuBtn.configure(relief="flat")
         self.gamesMenuBtn.configure(overrelief="flat")
         self.gamesMenuBtn.configure(activebackground="#CF1E14")
@@ -81,11 +90,12 @@ class MainPage: # Αρχική Σελίδα
         self.gamesMenuBtn.configure(font="-family {Poppins SemiBold} -size 24")
         self.gamesMenuBtn.configure(borderwidth="0")
         self.gamesMenuBtn.configure(text="""ΑΓΩΝΕΣ""")
-        # self.gamesMenuBtn.configure(command=games_page)
         self.gamesMenuBtn.configure(command=games_nocanvas_page)
+        #End region πλήκτρου ανακατεύθυνσης
 
+        #Πλήκτρο ανακατεύθυνσης στη σελίδα αρχικοποίησης της βάσης
         self.init_db = Button(root)
-        self.init_db.place(relx=0.25, rely=0.5, width=250, height=100)
+        self.init_db.place(relx=0.40, rely=0.4, width=250, height=100)
         self.init_db.configure(relief="flat")
         self.init_db.configure(overrelief="flat")
         self.init_db.configure(activebackground="#CF1E14")
@@ -95,42 +105,65 @@ class MainPage: # Αρχική Σελίδα
         self.init_db.configure(font="-family {Poppins SemiBold} -size 24")
         self.init_db.configure(borderwidth="0")
         self.init_db.configure(text="""ΑΡΧΙΚΟΠΟΙΗΣΗ""")
-        self.init_db.configure(command=data_parsing)
-    
-        
+        self.init_db.configure(command=parsing_gui)
+        #End region πλήκτρου ανακατεύθυνσης
 
+        #Πλήκτρο ανακατεύθυνσης στη σελίδα του Github
+        self.github_pg = Button(root)
+        self.github_pg.place(relx=0.10, rely=0.4, width=250, height=100)
+        self.github_pg.configure(relief="flat")
+        self.github_pg.configure(overrelief="flat")
+        self.github_pg.configure(activebackground="#CF1E14")
+        self.github_pg.configure(cursor="hand2")
+        self.github_pg.configure(foreground="#ffffff")
+        self.github_pg.configure(background="#CF1E14")
+        self.github_pg.configure(font="-family {Poppins SemiBold} -size 24")
+        self.github_pg.configure(borderwidth="0")
+        self.github_pg.configure(text="""Github""")
+        self.github_pg.configure(command=lambda: webbrowser.open("https://github.com/Grinabl/plhpro-group3-21-22"))
+        #End region πλήκτρου ανακατεύθυνσης
+
+        #Πλήκτρο ανακατεύθυνσης στη σελίδα των συντελεστών
+        self.abt_pg = Button(root)
+        self.abt_pg.place(relx=0.70, rely=0.4, width=250, height=100)
+        self.abt_pg.configure(relief="flat")
+        self.abt_pg.configure(overrelief="flat")
+        self.abt_pg.configure(activebackground="#CF1E14")
+        self.abt_pg.configure(cursor="hand2")
+        self.abt_pg.configure(foreground="#ffffff")
+        self.abt_pg.configure(background="#CF1E14")
+        self.abt_pg.configure(font="-family {Poppins SemiBold} -size 24")
+        self.abt_pg.configure(borderwidth="0")
+        self.abt_pg.configure(text="""ΣΥΝΤΕΛΕΣΤΕΣ""")
+        self.abt_pg.configure(command=about_page)
+        #End region πλήκτρου ανακατεύθυνσης
+                
 class PlayerList: # Σελίδα λίστας παικτών
     def __init__(self, top=None):
         top.geometry("1366x768")
         top.resizable(0, 0)
         top.title("AUSTRALIAN OPEN - ΠΛΗΠΡΟ - ΟΜΑΔΑ03 - ΛΙΣΤΑ ΠΑΙΚΤΩΝ")
-
+        
         self.sel_player_name_label = Label(players)
         self.sel_player_name_label.place(relx=0.800, rely=0.05)
         self.sel_player_name_label.configure(font="-family {Poppins SemiBold} -size 20")
         
-
         self.sel_player_surname_label = Label(players)
         self.sel_player_surname_label.place(relx=0.800, rely=0.10)
         self.sel_player_surname_label.configure(font="-family {Poppins SemiBold} -size 20")
         
-
         self.sel_player_birth_date_label = Label(players)
         self.sel_player_birth_date_label.place(relx=0.800, rely=0.15)
         self.sel_player_birth_date_label.configure(font="-family {Poppins SemiBold} -size 10")
-        
-        
+
         self.sel_player_birth_place_label = Label(players)
         self.sel_player_birth_place_label.place(relx=0.800, rely=0.20)
         self.sel_player_birth_place_label.configure(font="-family {Poppins SemiBold} -size 10")
         
-
         self.sel_player_rank = Label(players)
         self.sel_player_rank.place(relx=0.700, rely=0.05)
         self.sel_player_rank.configure(font="-family {Poppins SemiBold} -size 30")
         
-
-
         #region Label Αναζήτησης
         self.player_search_label = Label(players)
         self.player_search_label.place(relx=0, rely=0.005, width=100, height=28)
@@ -206,7 +239,7 @@ class PlayerList: # Σελίδα λίστας παικτών
         self.exit_button.configure(text="""ΕΠΙΣΤΡΟΦΗ ΣΤΟ MENU""")
         self.exit_button.configure(command=self.Exit)
 
-        # player games frame
+        #player games frame
         self.player_games_frame = Frame(players)
         self.player_games_frame.place(relx=0.6, rely=0.4,width=400)
 
@@ -272,8 +305,6 @@ class PlayerList: # Σελίδα λίστας παικτών
                     game_title_label.configure(font="-family {Poppins SemiBold} -size 12", anchor=W)
                     r_y += 0.08
 
-                
-
     def Exit(self):
         players.destroy()
         root.deiconify()
@@ -301,7 +332,7 @@ class GamesNoCanvasPage:
         self.exit_button.configure(text="""ΕΠΙΣΤΡΟΦΗ ΣΤΟ MENU""")
         self.exit_button.configure(command=self.Exit)
 
-        # Draw button
+        # Κουμπί αρχικοποίησης κλήρωσης
         self.draw_button = Button(gamesNoCanvas)
         self.draw_button.place(relx=0.35, rely=0.005, width=200, height=23)
         self.draw_button.configure(relief="flat")
@@ -345,8 +376,6 @@ class GamesNoCanvasPage:
                         name2="N/A"
                         score1="N/A"
                         score2="N/A"
-                    # Get name1
-                    # Get name2
                 elif (matches == 32):
                     external = j // 2 + 1
                     internal_num = j % 2 + 1
@@ -366,8 +395,6 @@ class GamesNoCanvasPage:
                         name2="N/A"
                         score1="N/A"
                         score2="N/A"
-                    # Get name1
-                    # Get name2
                 elif (matches == 16):
                     external = j + 1
                     internal_num = 1
@@ -460,7 +487,6 @@ class GamesNoCanvasPage:
                         name2="N/A"
                         score1="N/A"
                         score2="N/A"
-
                 self.create_players_rect(name1, name2, score1, score2, row, column, self.frame.scrollable_frame, i + 1, j + 1,match_id, next_round_id)
                 row += add_param
             if (i == 0):
@@ -474,15 +500,10 @@ class GamesNoCanvasPage:
         self.frame.pack(fill="both", expand=True)
 
     def create_draw(self):
-        run_draw()
+        run_draw() # Εκτέλεση κώδικα κλήρωσης από αρχείο draw.py
         self.Exit()
     
     def create_players_rect(self, name1, name2, score1, score2, start_row, start_column, top_1, round_num, match_num, match_id, next_round_id):
-        # if len(game[0]) > 3:
-        #     group_label.configure(text=f'ΓΥΡΟΣ: {game[0][0]} GROUP: {game[0][2]} MATCH: {game[0][4]}')
-        # else:
-        #     group_label.configure(text=f'ΓΥΡΟΣ: {game[0][0]} MATCH: {game[0][2]}')
-        
         game_title_label = Label(top_1, text=f"ΓΥΡΟΣ: {str(round_num)} ΠΑΙΧΝΙΔΙ: {str(match_num)}")
         game_title_label.configure(font="-family {Poppins SemiBold} -size 12")
         game_title_label.grid(row=start_row, column=start_column)
@@ -502,12 +523,20 @@ class GamesNoCanvasPage:
         if (name1!="N/A" and name2!="N/A"):
             score_btn = Button(top_1, text="SCORE")
             score_btn.configure(command=lambda match_id=match_id, next_round_id=next_round_id, name1=name1, name2=name2: score_page(match_id, next_round_id, name1, name2))
+            score_btn.configure(relief="flat")
+            score_btn.configure(overrelief="flat")
+            score_btn.configure(activebackground="#CF1E14")
+            score_btn.configure(cursor="hand2")
+            score_btn.configure(foreground="#ffffff")
+            score_btn.configure(background="#CF1E14")
+            score_btn.configure(borderwidth="0")
             score_btn.grid(row=start_row, column=start_column+2)
 
     def Exit(self):
         gamesNoCanvas.destroy()
         root.deiconify()
 
+# Σελίδα καταχώρησης σκορ
 class ScoresPage:
     def __init__(self, top=None,match_id=0,next_round_id=0,name1="",name2=""):
         top.geometry("700x350")
@@ -519,7 +548,6 @@ class ScoresPage:
         self.player1_name_label.place(relx=0.100, rely=0.01)
         self.player1_name_label.configure(font="-family {Poppins SemiBold} -size 15",text=name1)
         
-
         self.player2_name_label = Label(scoresPopup)
         self.player2_name_label.place(relx=0.400, rely=0.01)
         self.player2_name_label.configure(font="-family {Poppins SemiBold} -size 15",text=name2)
@@ -545,13 +573,6 @@ class ScoresPage:
         self.submit_score_btn.configure(text="""ΚΑΤΑΧΩΡΗΣΗ""")
         self.submit_score_btn.configure(command=lambda: self.insert_score(match_id, next_round_id))
 
-        # self.test_label = Label(scoresPopup)
-        # self.test_label.configure(border=2, width=30, height=5)
-        # self.test_label.place(relx=0.1, rely=0.5)
-        # self.player1_name_test_label = Label(scoresPopup)
-        # self.player1_name_test_label.place(relx=0.100, rely=0.5)
-        # self.player1_name_test_label.configure(font="-family {Poppins SemiBold} -size 15",text=name1)
-
         self.fetch_data(match_id)
 
     def fetch_data(self, match_id):
@@ -571,12 +592,11 @@ class ScoresPage:
         else: 
             cur.execute('UPDATE Matches SET Player1Score=?, Player2Score=? WHERE Id=?', (int(score1), int(score2), match_id,))
             db.commit()
-            # current_match = cur.execute('SELECT Id, Player1Id, Player2Id, Player1Score, Player2Score FROM Matches where Id=?', (match_id,)).fetchall()
-            winner_id = 0
+            winner_id = 0 # Αρχικοποίηση id νικητή
             if int(score1)>int(score2):
-                winner_id=int(current_match[0][1])
+                winner_id=int(current_match[0][1]) # Νικητής Player1
             elif int(score1)<int(score2):
-                winner_id=int(current_match[0][2])
+                winner_id=int(current_match[0][2])# Νικητής Player2
             else:
                 scoresPopup.destroy()
                 games_nocanvas_page.deiconify()
@@ -594,5 +614,45 @@ class ScoresPage:
         scoresPopup.destroy()
         gamesNoCanvas.deiconify()
 
+# Σελίδα Συντελεστές
+class AboutPage():
+    def __init__(self, top=None):
+        top.geometry("700x350")
+        top.resizable(0, 0)
+        top.title("AUSTRALIAN OPEN - ΠΛΗΠΡΟ - ΟΜΑΔΑ03 - ΣΥΝΤΕΛΕΣΤΕΣ")
+
+        # επιστροφη στο μενου
+        self.exit_button = Button(about)
+        self.exit_button.place(relx=0.635, rely=0.005, width=200, height=23)
+        self.exit_button.configure(relief="flat")
+        self.exit_button.configure(overrelief="flat")
+        self.exit_button.configure(activebackground="#CF1E14")
+        self.exit_button.configure(cursor="hand2")
+        self.exit_button.configure(foreground="#ffffff")
+        self.exit_button.configure(background="#CF1E14")
+        self.exit_button.configure(font="-family {Poppins SemiBold} -size 10")
+        self.exit_button.configure(borderwidth="0")
+        self.exit_button.configure(text="""ΕΠΙΣΤΡΟΦΗ ΣΤΟ MENU""")
+        self.exit_button.configure(command=self.Exit)
+        #end region επιστροφη στο μενου
+        
+        # Συντελεστές         
+        self.contributors1_label = Label(about, text="ΓΙΑΝΝΗΣ ΚΑΡΑΜΠΙΝΗΣ")
+        self.contributors1_label.configure(font="-family {Poppins SemiBold} -size 10")
+        self.contributors1_label.place(relx=0.5, rely=0.1, anchor=CENTER)
+        
+        self.contributors2_label = Label(about, text="ΑΛΕΞΑΝΔΡΟΣ ΝΑΚΟΣ")
+        self.contributors2_label.configure(font="-family {Poppins SemiBold} -size 10")
+        self.contributors2_label.place(relx=0.5, rely=0.2, anchor=CENTER)
+
+        self.contributors3_label = Label(about, text="ΕΥΘΥΜΙΟΣ ΓΙΑΛΑΜΑΣ")
+        self.contributors3_label.configure(font="-family {Poppins SemiBold} -size 10")
+        self.contributors3_label.place(relx=0.5, rely=0.3, anchor=CENTER)
+
+    # Έξοδος από τη σελίδα
+    def Exit(self):
+        about.destroy()
+        root.deiconify()
+        
 mainPage = MainPage(root)
 root.mainloop()
